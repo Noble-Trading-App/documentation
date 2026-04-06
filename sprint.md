@@ -5,11 +5,13 @@
 - Iterate agent learning & backtesting previous recommendations
 - Backend data testing & model calculations
 - Validate agent design
+- Create subagents for specific tasks
 - Save to memories & database
 
 ## 4/13-4/18
 - Fine tune agent skills
 - Design enterprise website data structure
+- 
 
 ## 4/20-4/25
 - Implement enterprise website w/risk manager
