@@ -1,5 +1,4 @@
-# Agent Design
-## Masaniello betting strategy (sometimes spelled Masaniello system). 
+# Masaniello betting strategy (sometimes spelled Masaniello system). 
 It is a bankroll management and staking strategy originally developed in Italy for sports betting, but it is also sometimes used in trading and binary options.
 
 The system is designed to maximize profit over a fixed number of bets while controlling risk, assuming you will win a predetermined number of bets out of a sequence.
