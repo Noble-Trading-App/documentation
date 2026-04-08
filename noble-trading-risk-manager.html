@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noble Trading — Risk Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #0b0c0f;
+    --surface: #13151a;
+    --surface2: #1c1f27;
+    --border: rgba(255,255,255,0.07);
+    --border-accent: rgba(255,255,255,0.15);
+    --text: #eef0f4;
+    --muted: #6b7280;
+    --accent: #c8f542;
+    --accent-dim: rgba(200,245,66,0.12);
+    --accent-dim2: rgba(200,245,66,0.06);
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --amber: #f59e0b;
+    --amber-dim: rgba(245,158,11,0.12);
+    --blue: #3b82f6;
+    --blue-dim: rgba(59,130,246,0.12);
+    --font-main: 'Syne', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-main);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-mark svg { width: 20px; height: 20px; }
+
+  .header h1 {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .header-sub {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-top: 1px;
+  }
+
+  .status-pill {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid rgba(34,197,94,0.2);
+  }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-title {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .panel-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  .panel-body {
+    padding: 18px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    margin-top: 18px;
+  }
+
+  .section-label:first-child { margin-top: 0; }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .input-row.single { grid-template-columns: 1fr; }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .field label {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  .field input, .field select {
+    background: var(--surface2);
+    border: 1px solid var(--border-accent);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 7px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .field input:focus, .field select:focus {
+    border-color: var(--accent);
+  }
+
+  .field select option {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+  }
+
+  .toggle-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  .toggle {
+    position: relative;
+    width: 36px;
+    height: 20px;
+  }
+
+  .toggle input { opacity: 0; width: 0; height: 0; }
+
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border-accent);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .toggle-slider:before {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    left: 2px;
+    top: 2px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: all 0.2s;
+  }
+
+  .toggle input:checked + .toggle-slider {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+  }
+
+  .toggle input:checked + .toggle-slider:before {
+    background: var(--accent);
+    transform: translateX(16px);
+  }
+
+  .calc-btn {
+    width: 100%;
+    padding: 11px;
+    background: var(--accent);
+    color: #0b0c0f;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-main);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 16px;
+    letter-spacing: 0.02em;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .calc-btn:hover { opacity: 0.9; }
+  .calc-btn:active { transform: scale(0.98); }
+
+  .right-col { display: flex; flex-direction: column; gap: 16px; }
+
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .result-hero {
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .hero-metric {
+    background: var(--surface);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .hero-metric:first-child { border-radius: 0; }
+
+  .metric-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .metric-value {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .metric-value.allowed { color: var(--green); }
+  .metric-value.blocked { color: var(--red); }
+  .metric-value.warn { color: var(--amber); }
+  .metric-value.accent { color: var(--accent); }
+
+  .metric-sub {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  .result-body {
+    padding: 18px 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .factor-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .factor-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+
+  .factor-name {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  .factor-bar-wrap {
+    flex: 1;
+    margin: 0 12px;
+    height: 4px;
+    background: var(--border-accent);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .factor-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .factor-val {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text);
+    min-width: 42px;
+    text-align: right;
+  }
+
+  .verdict-box {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    border: 1px solid;
+    margin-top: 4px;
+  }
+
+  .verdict-box.allowed {
+    background: var(--green-dim);
+    border-color: rgba(34,197,94,0.25);
+    color: var(--green);
+  }
+
+  .verdict-box.blocked {
+    background: var(--red-dim);
+    border-color: rgba(239,68,68,0.25);
+    color: var(--red);
+  }
+
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .chart-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .chart-panel .panel-body {
+    padding: 16px 18px 18px;
+  }
+
+  .regime-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .regime-tile {
+    padding: 10px 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .regime-tile.active {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .regime-tile-label {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-top: 4px;
+    display: block;
+  }
+
+  .regime-tile-val {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .history-table th {
+    text-align: left;
+    padding: 8px 12px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+    letter-spacing: 0.06em;
+  }
+
+  .history-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .history-table tr:last-child td { border-bottom: none; }
+
+  .history-table tr:hover td { background: var(--surface2); }
+
+  .badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  .badge.long { background: var(--green-dim); color: var(--green); }
+  .badge.short { background: var(--red-dim); color: var(--red); }
+  .badge.ok { background: var(--green-dim); color: var(--green); }
+  .badge.blocked { background: var(--red-dim); color: var(--red); }
+
+  .markov-vis {
+    padding: 16px 18px;
+  }
+
+  .state-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .state-box {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .state-box.dominant { border-color: var(--accent); background: var(--accent-dim2); }
+  .state-box.high { border-color: var(--blue); background: rgba(59,130,246,0.06); }
+  .state-box.low { opacity: 0.5; }
+
+  .state-name {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-bottom: 4px;
+  }
+
+  .state-prob {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 14px 0;
+  }
+
+  .info-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .info-chip {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border-accent);
+    color: var(--muted);
+  }
+
+  .info-chip span { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .result-hero { grid-template-columns: 1fr 1fr; }
+    .charts-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-mark">
+        <svg viewBox="0 0 20 20" fill="none">
+          <path d="M3 14L7 9L11 11L17 5" stroke="#0b0c0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="17" cy="5" r="2" fill="#0b0c0f"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Noble Trading — Risk Manager</h1>
+        <div class="header-sub">Dynamic Masaniello + Markov Regime Engine</div>
+      </div>
+    </div>
+    <div class="status-pill">v2.1 · LIVE</div>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- LEFT: Inputs -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Trade Parameters</span>
+        <span class="panel-badge">INPUT</span>
+      </div>
+      <div class="panel-body">
+
+        <div class="section-label">Account</div>
+        <div class="input-row">
+          <div class="field">
+            <label>Equity ($)</label>
+            <input type="number" id="equity" value="10000" min="1">
+          </div>
+          <div class="field">
+            <label>Current Drawdown (%)</label>
+            <input type="number" id="drawdown" value="2" min="0" max="100" step="0.1">
+          </div>
+        </div>
+
+        <div class="section-label">Trade Setup</div>
+        <div class="input-row">
+          <div class="field">
+            <label>Stop Distance ($)</label>
+            <input type="number" id="stop_distance" value="25" min="0.01" step="0.01">
+          </div>
+          <div class="field">
+            <label>Point Value ($)</label>
+            <input type="number" id="point_value" value="1" min="0.01" step="0.01">
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="field">
+            <label>Reward / Risk Ratio</label>
+            <input type="number" id="reward_risk" value="1.5" min="0.1" step="0.1">
+          </div>
+          <div class="field">
+            <label>Direction</label>
+            <select id="direction">
+              <option value="long">Long</option>
+              <option value="short">Short</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-label">Markov / HMM Signal</div>
+        <div class="input-row">
+          <div class="field">
+            <label>Win Probability (p_win)</label>
+            <input type="number" id="p_win" value="0.63" min="0" max="1" step="0.01">
+          </div>
+          <div class="field">
+            <label>Regime Quality (0–1.5)</label>
+            <input type="number" id="regime_quality" value="1.1" min="0" max="1.5" step="0.05">
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="field">
+            <label>State Confidence (0–1)</label>
+            <input type="number" id="state_confidence" value="0.78" min="0" max="1" step="0.01">
+          </div>
+          <div class="field">
+            <label>Regime Label</label>
+            <select id="regime_label">
+              <option value="bull_trend">Bull Trend</option>
+              <option value="bear_trend">Bear Trend</option>
+              <option value="range">Range</option>
+              <option value="volatile">Volatile</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-label">Volatility</div>
+        <div class="input-row">
+          <div class="field">
+            <label>ATR Baseline</label>
+            <input type="number" id="atr_baseline" value="20" min="0.01" step="0.1">
+          </div>
+          <div class="field">
+            <label>ATR Current</label>
+            <input type="number" id="atr_current" value="22" min="0.01" step="0.1">
+          </div>
+        </div>
+
+        <div class="section-label">Masaniello Batch</div>
+        <div class="input-row">
+          <div class="field">
+            <label>Batch Size (N)</label>
+            <input type="number" id="batch_size" value="10" min="1" max="50">
+          </div>
+          <div class="field">
+            <label>Target Wins (W)</label>
+            <input type="number" id="target_wins" value="6" min="1" max="50">
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="field">
+            <label>Trade Index (i)</label>
+            <input type="number" id="trade_index" value="4" min="1" max="50">
+          </div>
+          <div class="field">
+            <label>Wins So Far (w)</label>
+            <input type="number" id="wins_so_far" value="2" min="0" max="50">
+          </div>
+        </div>
+        <div class="input-row single">
+          <div class="field">
+            <label>Losses So Far (l)</label>
+            <input type="number" id="losses_so_far" value="1" min="0" max="50">
+          </div>
+        </div>
+
+        <div class="section-label">Risk Config</div>
+        <div class="input-row">
+          <div class="field">
+            <label>Base Risk (%)</label>
+            <input type="number" id="base_risk" value="0.5" min="0.01" max="5" step="0.01">
+          </div>
+          <div class="field">
+            <label>Max Risk (%)</label>
+            <input type="number" id="max_risk" value="1.0" min="0.01" max="5" step="0.01">
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="field">
+            <label>Min Risk (%)</label>
+            <input type="number" id="min_risk" value="0.25" min="0.01" max="5" step="0.01">
+          </div>
+          <div class="field">
+            <label>Max Drawdown (%)</label>
+            <input type="number" id="max_drawdown" value="10" min="1" max="50" step="0.1">
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <span class="toggle-label">Kelly Overlay</span>
+          <label class="toggle">
+            <input type="checkbox" id="use_kelly">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div id="kelly-field" style="display:none;">
+          <div class="field">
+            <label>Kelly Fraction</label>
+            <input type="number" id="kelly_fraction" value="0.25" min="0.05" max="1" step="0.05">
+          </div>
+        </div>
+
+        <button class="calc-btn" onclick="calculate()">Calculate Position Size</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Results -->
+    <div class="right-col">
+
+      <!-- Hero metrics -->
+      <div class="result-card" id="result-card">
+        <div class="result-hero">
+          <div class="hero-metric">
+            <div class="metric-label">Decision</div>
+            <div class="metric-value blocked" id="res-decision">—</div>
+            <div class="metric-sub" id="res-reason">Run calculation</div>
+          </div>
+          <div class="hero-metric">
+            <div class="metric-label">Contracts</div>
+            <div class="metric-value accent" id="res-contracts">—</div>
+            <div class="metric-sub" id="res-units">— units</div>
+          </div>
+          <div class="hero-metric">
+            <div class="metric-label">Risk Amount</div>
+            <div class="metric-value" id="res-risk-amount">—</div>
+            <div class="metric-sub" id="res-risk-pct">— % equity</div>
+          </div>
+          <div class="hero-metric">
+            <div class="metric-label">Expected Edge</div>
+            <div class="metric-value" id="res-edge">—</div>
+            <div class="metric-sub" id="res-edge-sub">E = p·R − (1−p)</div>
+          </div>
+        </div>
+
+        <div class="result-body">
+          <div>
+            <div class="section-label">Factor Breakdown</div>
+            <div class="factor-grid" id="factor-grid">
+              <div class="factor-row">
+                <span class="factor-name">masaniello</span>
+                <div class="factor-bar-wrap"><div class="factor-bar" id="bar-masaniello" style="width:0%;background:var(--accent)"></div></div>
+                <span class="factor-val" id="val-masaniello">—</span>
+              </div>
+              <div class="factor-row">
+                <span class="factor-name">quality</span>
+                <div class="factor-bar-wrap"><div class="factor-bar" id="bar-quality" style="width:0%;background:var(--blue)"></div></div>
+                <span class="factor-val" id="val-quality">—</span>
+              </div>
+              <div class="factor-row">
+                <span class="factor-name">drawdown</span>
+                <div class="factor-bar-wrap"><div class="factor-bar" id="bar-drawdown" style="width:0%;background:var(--green)"></div></div>
+                <span class="factor-val" id="val-drawdown">—</span>
+              </div>
+              <div class="factor-row">
+                <span class="factor-name">volatility</span>
+                <div class="factor-bar-wrap"><div class="factor-bar" id="bar-volatility" style="width:0%;background:var(--amber)"></div></div>
+                <span class="factor-val" id="val-volatility">—</span>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="info-row" id="info-row">
+              <div class="info-chip">batch <span id="info-batch">—</span></div>
+              <div class="info-chip">progress <span id="info-progress">—</span></div>
+              <div class="info-chip">regime <span id="info-regime">—</span></div>
+              <div class="info-chip">direction <span id="info-dir">—</span></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="section-label">Markov State Probabilities</div>
+            <div class="state-row" id="state-row">
+              <div class="state-box" id="state-bull">
+                <div class="state-name">bull trend</div>
+                <div class="state-prob" id="prob-bull">—</div>
+              </div>
+              <div class="state-box" id="state-bear">
+                <div class="state-name">bear trend</div>
+                <div class="state-prob" id="prob-bear">—</div>
+              </div>
+              <div class="state-box" id="state-range">
+                <div class="state-name">range</div>
+                <div class="state-prob" id="prob-range">—</div>
+              </div>
+              <div class="state-box" id="state-volatile">
+                <div class="state-name">volatile</div>
+                <div class="state-prob" id="prob-volatile">—</div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="section-label">Risk Engine Verdict</div>
+            <div class="verdict-box blocked" id="verdict-box">
+              Awaiting calculation...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="charts-row">
+        <div class="chart-panel">
+          <div class="panel-header">
+            <span class="panel-title">Batch Progress</span>
+            <span class="panel-badge">MASANIELLO</span>
+          </div>
+          <div class="panel-body">
+            <div style="position:relative;height:180px;">
+              <canvas id="batchChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="chart-panel">
+          <div class="panel-header">
+            <span class="panel-title">Risk Sensitivity</span>
+            <span class="panel-badge">P_WIN SWEEP</span>
+          </div>
+          <div class="panel-body">
+            <div style="position:relative;height:180px;">
+              <canvas id="sweepChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trade History -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Session Log</span>
+          <span class="panel-badge" id="log-count">0 trades</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Dir</th>
+                <th>p_win</th>
+                <th>regime</th>
+                <th>contracts</th>
+                <th>risk $</th>
+                <th>edge</th>
+                <th>status</th>
+              </tr>
+            </thead>
+            <tbody id="history-body">
+              <tr><td colspan="8" style="color:var(--muted);text-align:center;padding:16px;">No trades logged yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+let batchChart, sweepChart;
+let sessionLog = [];
+
+document.getElementById('use_kelly').addEventListener('change', function() {
+  document.getElementById('kelly-field').style.display = this.checked ? 'block' : 'none';
+});
+
+function clamp(x, lo, hi) { return Math.max(lo, Math.min(hi, x)); }
+
+function sizeTrade(params) {
+  const {
+    equity, stop_distance, point_value, p_win, reward_risk,
+    regime_quality, state_confidence, current_drawdown,
+    atr_baseline, atr_current, wins_so_far, trade_index,
+    batch_size, target_wins, direction,
+    base_risk, min_risk, max_risk, max_drawdown,
+    use_kelly, kelly_fraction, min_prob, regime_floor
+  } = params;
+
+  if (equity <= 0) return { allowed: false, reason: 'Equity must be positive.', ...zeroResult() };
+  if (stop_distance <= 0 || point_value <= 0) return { allowed: false, reason: 'Stop distance and point value must be positive.', ...zeroResult() };
+  if (regime_quality < regime_floor) return { allowed: false, reason: `Regime quality (${regime_quality.toFixed(2)}) below floor (${regime_floor.toFixed(2)}).`, ...zeroResult() };
+  if (p_win < min_prob) return { allowed: false, reason: `Win probability (${p_win.toFixed(2)}) below minimum (${min_prob.toFixed(2)}).`, ...zeroResult() };
+
+  const edge = p_win * reward_risk - (1 - p_win);
+  if (edge <= 0) return { allowed: false, reason: `Expected edge is non-positive (${edge.toFixed(3)}).`, ...zeroResult(), expected_edge: edge };
+
+  const trades_left = Math.max(1, batch_size - trade_index + 1);
+  const wins_needed = Math.max(0, target_wins - wins_so_far);
+  const masaniello_factor = clamp(wins_needed / trades_left, 0, 1.5);
+
+  const prob_edge = Math.max(0, p_win - min_prob);
+  const prob_factor = clamp(prob_edge / 0.10, 0, 1.5);
+  const regime_factor = clamp(regime_quality, 0, 1.5);
+  const confidence_factor = clamp(state_confidence, 0, 1);
+  const quality_factor = prob_factor * regime_factor * confidence_factor;
+
+  const dd_ratio = current_drawdown / Math.max(max_drawdown, 1e-9);
+  const drawdown_factor = clamp(1 - dd_ratio, 0.25, 1.0);
+
+  const vol_raw = atr_current > 0 ? atr_baseline / atr_current : 1;
+  const volatility_factor = clamp(vol_raw, 0.5, 1.5);
+
+  let risk_fraction = base_risk * (0.5 + masaniello_factor) * quality_factor * drawdown_factor * volatility_factor;
+
+  if (use_kelly) {
+    const b = reward_risk;
+    const q = 1 - p_win;
+    const kelly_raw = b > 0 ? (b * p_win - q) / b : 0;
+    const kelly_cap = Math.max(0, kelly_raw) * kelly_fraction;
+    risk_fraction = Math.min(risk_fraction, kelly_cap > 0 ? kelly_cap : min_risk);
+  }
+
+  risk_fraction = clamp(risk_fraction, min_risk, max_risk);
+  const risk_amount = equity * risk_fraction;
+  const dollars_per_unit = stop_distance * point_value;
+  const units = risk_amount / dollars_per_unit;
+  const contracts = Math.floor(units);
+
+  if (contracts < 1) {
+    return {
+      allowed: false, reason: 'Calculated size < 1 contract.',
+      risk_fraction, risk_amount, units, contracts: 0,
+      masaniello_factor, quality_factor, drawdown_factor, volatility_factor, expected_edge: edge
+    };
+  }
+
+  return {
+    allowed: true, reason: 'Trade allowed.',
+    risk_fraction, risk_amount, units, contracts,
+    masaniello_factor, quality_factor, drawdown_factor, volatility_factor, expected_edge: edge
+  };
+}
+
+function zeroResult() {
+  return { risk_fraction: 0, risk_amount: 0, units: 0, contracts: 0, masaniello_factor: 0, quality_factor: 0, drawdown_factor: 0, volatility_factor: 0, expected_edge: 0 };
+}
+
+function getInputs() {
+  const g = id => parseFloat(document.getElementById(id).value) || 0;
+  return {
+    equity: g('equity'),
+    stop_distance: g('stop_distance'),
+    point_value: g('point_value'),
+    p_win: g('p_win'),
+    reward_risk: g('reward_risk'),
+    regime_quality: g('regime_quality'),
+    state_confidence: g('state_confidence'),
+    current_drawdown: g('drawdown') / 100,
+    atr_baseline: g('atr_baseline'),
+    atr_current: g('atr_current'),
+    wins_so_far: parseInt(document.getElementById('wins_so_far').value) || 0,
+    losses_so_far: parseInt(document.getElementById('losses_so_far').value) || 0,
+    trade_index: parseInt(document.getElementById('trade_index').value) || 1,
+    batch_size: parseInt(document.getElementById('batch_size').value) || 10,
+    target_wins: parseInt(document.getElementById('target_wins').value) || 6,
+    direction: document.getElementById('direction').value,
+    base_risk: g('base_risk') / 100,
+    min_risk: g('min_risk') / 100,
+    max_risk: g('max_risk') / 100,
+    max_drawdown: g('max_drawdown') / 100,
+    use_kelly: document.getElementById('use_kelly').checked,
+    kelly_fraction: g('kelly_fraction'),
+    min_prob: 0.50,
+    regime_floor: 0.50,
+    regime_label: document.getElementById('regime_label').value
+  };
+}
+
+function computeMarkovProbs(params) {
+  const regimeMap = {
+    bull_trend: { bull: 0.68, bear: 0.08, range: 0.14, volatile: 0.10 },
+    bear_trend: { bull: 0.08, bear: 0.66, range: 0.16, volatile: 0.10 },
+    range:      { bull: 0.20, bear: 0.18, range: 0.52, volatile: 0.10 },
+    volatile:   { bull: 0.18, bear: 0.18, range: 0.22, volatile: 0.42 }
+  };
+  const base = regimeMap[params.regime_label] || regimeMap.bull_trend;
+  const conf = clamp(params.state_confidence, 0, 1);
+  const uniform = 0.25;
+  return {
+    bull: base.bull * conf + uniform * (1 - conf),
+    bear: base.bear * conf + uniform * (1 - conf),
+    range: base.range * conf + uniform * (1 - conf),
+    volatile: base.volatile * conf + uniform * (1 - conf)
+  };
+}
+
+function calculate() {
+  const params = getInputs();
+  const result = sizeTrade(params);
+
+  // Hero metrics
+  const dec = document.getElementById('res-decision');
+  dec.textContent = result.allowed ? 'ALLOWED' : 'BLOCKED';
+  dec.className = 'metric-value ' + (result.allowed ? 'allowed' : 'blocked');
+  document.getElementById('res-reason').textContent = result.reason;
+
+  document.getElementById('res-contracts').textContent = result.contracts;
+  document.getElementById('res-units').textContent = result.units > 0 ? result.units.toFixed(2) + ' units' : '— units';
+
+  document.getElementById('res-risk-amount').textContent = result.risk_amount > 0 ? '$' + result.risk_amount.toFixed(2) : '—';
+  document.getElementById('res-risk-pct').textContent = result.risk_fraction > 0 ? (result.risk_fraction * 100).toFixed(3) + '% equity' : '—';
+
+  const edgeEl = document.getElementById('res-edge');
+  edgeEl.textContent = result.expected_edge !== 0 ? result.expected_edge.toFixed(3) + 'R' : '—';
+  edgeEl.className = 'metric-value ' + (result.expected_edge > 0 ? 'allowed' : result.expected_edge < 0 ? 'blocked' : '');
+
+  // Factor bars
+  function setFactor(key, val, max) {
+    document.getElementById('val-' + key).textContent = val.toFixed(3);
+    document.getElementById('bar-' + key).style.width = Math.min(100, (val / max) * 100) + '%';
+  }
+  setFactor('masaniello', result.masaniello_factor, 1.5);
+  setFactor('quality', result.quality_factor, 2.0);
+  setFactor('drawdown', result.drawdown_factor, 1.0);
+  setFactor('volatility', result.volatility_factor, 1.5);
+
+  // Info chips
+  const w = params.wins_so_far, l = params.losses_so_far;
+  document.getElementById('info-batch').innerHTML = `<span>${params.trade_index}/${params.batch_size}</span>`;
+  document.getElementById('info-progress').innerHTML = `<span>${w}W ${l}L / ${params.target_wins} target</span>`;
+  document.getElementById('info-regime').innerHTML = `<span>${params.regime_label.replace('_',' ')}</span>`;
+  document.getElementById('info-dir').innerHTML = `<span>${params.direction.toUpperCase()}</span>`;
+
+  // Markov states
+  const probs = computeMarkovProbs(params);
+  const stateIds = ['bull', 'bear', 'range', 'volatile'];
+  const maxState = stateIds.reduce((a, b) => probs[a] > probs[b] ? a : b);
+  const colors = { bull: 'var(--green)', bear: 'var(--red)', range: 'var(--blue)', volatile: 'var(--amber)' };
+
+  stateIds.forEach(s => {
+    document.getElementById('prob-' + s).textContent = (probs[s] * 100).toFixed(1) + '%';
+    document.getElementById('prob-' + s).style.color = colors[s];
+    const box = document.getElementById('state-' + s);
+    box.className = 'state-box ' + (s === maxState ? 'dominant' : probs[s] > 0.2 ? 'high' : 'low');
+  });
+
+  // Verdict
+  const vb = document.getElementById('verdict-box');
+  vb.className = 'verdict-box ' + (result.allowed ? 'allowed' : 'blocked');
+  if (result.allowed) {
+    vb.textContent = `TRADE ALLOWED — ${params.direction.toUpperCase()} ${result.contracts} contract${result.contracts !== 1 ? 's' : ''} · Risk $${result.risk_amount.toFixed(2)} (${(result.risk_fraction * 100).toFixed(3)}%) · Edge ${result.expected_edge.toFixed(3)}R`;
+  } else {
+    vb.textContent = `TRADE BLOCKED — ${result.reason}`;
+  }
+
+  // Charts
+  updateBatchChart(params, result);
+  updateSweepChart(params);
+
+  // Log
+  addToLog(params, result);
+}
+
+function updateBatchChart(params, result) {
+  const labels = [];
+  const winBars = [];
+  const lossBars = [];
+  const needed = [];
+
+  for (let i = 1; i <= params.batch_size; i++) {
+    labels.push('T' + i);
+    const isWin = i <= params.wins_so_far + params.losses_so_far ? (i <= params.wins_so_far) : null;
+    winBars.push(i <= params.wins_so_far ? 1 : 0);
+    lossBars.push(i > params.wins_so_far && i <= params.wins_so_far + params.losses_so_far ? 1 : 0);
+    needed.push(i === params.trade_index ? 1 : 0);
+  }
+
+  const ctx = document.getElementById('batchChart').getContext('2d');
+  if (batchChart) batchChart.destroy();
+  batchChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Win', data: winBars, backgroundColor: '#22c55e', borderRadius: 3, barThickness: 14 },
+        { label: 'Loss', data: lossBars, backgroundColor: '#ef4444', borderRadius: 3, barThickness: 14 },
+        { label: 'Current', data: needed, backgroundColor: '#c8f542', borderRadius: 3, barThickness: 14 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.dataset.label } } },
+      scales: {
+        x: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280', font: { size: 9 }, maxRotation: 0 } },
+        y: { stacked: true, display: false, max: 1.2 }
+      }
+    }
+  });
+}
+
+function updateSweepChart(params) {
+  const pVals = [];
+  const riskVals = [];
+  for (let p = 0.45; p <= 0.85; p += 0.02) {
+    pVals.push(p.toFixed(2));
+    const r = sizeTrade({ ...params, p_win: p });
+    riskVals.push(r.allowed ? parseFloat((r.risk_fraction * 100).toFixed(4)) : 0);
+  }
+
+  const ctx = document.getElementById('sweepChart').getContext('2d');
+  if (sweepChart) sweepChart.destroy();
+  sweepChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: pVals,
+      datasets: [{
+        label: 'Risk %',
+        data: riskVals,
+        borderColor: '#c8f542',
+        backgroundColor: 'rgba(200,245,66,0.08)',
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'Risk: ' + ctx.parsed.y.toFixed(3) + '%' } } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280', font: { size: 9 }, maxTicksLimit: 6 } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280', font: { size: 9 }, callback: v => v + '%' } }
+      }
+    }
+  });
+}
+
+function addToLog(params, result) {
+  sessionLog.unshift({ params, result, id: sessionLog.length + 1 });
+  if (sessionLog.length > 20) sessionLog.pop();
+
+  const tbody = document.getElementById('history-body');
+  document.getElementById('log-count').textContent = sessionLog.length + ' trade' + (sessionLog.length !== 1 ? 's' : '');
+
+  tbody.innerHTML = sessionLog.map(entry => {
+    const p = entry.params;
+    const r = entry.result;
+    return `<tr>
+      <td>${entry.id}</td>
+      <td><span class="badge ${p.direction}">${p.direction.toUpperCase()}</span></td>
+      <td>${p.p_win.toFixed(2)}</td>
+      <td>${p.regime_label.replace('_',' ')}</td>
+      <td>${r.contracts}</td>
+      <td>${r.risk_amount > 0 ? '$' + r.risk_amount.toFixed(2) : '—'}</td>
+      <td style="color:${r.expected_edge > 0 ? 'var(--green)' : 'var(--red)'};">${r.expected_edge.toFixed(3)}R</td>
+      <td><span class="badge ${r.allowed ? 'ok' : 'blocked'}">${r.allowed ? 'OK' : 'BLOCKED'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// Auto-calculate on load
+window.addEventListener('load', () => { setTimeout(calculate, 200); });
+</script>
+</body>
+</html>
